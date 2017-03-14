@@ -189,7 +189,7 @@ trait MongoThriftDao[T <: ThriftStruct, C <: ThriftStructCodec[T]] extends DBObj
     def results:Iterable[DBObject] = {
       coll.aggregate(pipeLine).results
     }
-
+     
   }
 
   case class Select(assocs: FieldAssoc*) {
