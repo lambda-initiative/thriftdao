@@ -1,7 +1,7 @@
 package com.lambdalab
 
-import com.mongodb.DBObject
 import org.apache.thrift.protocol.TField
+import com.mongodb.casbah.Imports._
 
 package object thriftdao {
   def $(fields: TField*) = {
@@ -10,5 +10,6 @@ package object thriftdao {
 
   type FieldAssoc =  (FieldSelector, Any)
   type FieldFilter =  (FieldSelector, DBObject)
-
 }
+
+
