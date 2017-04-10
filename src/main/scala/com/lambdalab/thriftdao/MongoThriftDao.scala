@@ -150,6 +150,9 @@ trait MongoThriftDao[T <: ThriftStruct, C <: ThriftStructCodec[T]] extends DBObj
     select(condition.map(convertAssoc) : _*).findOne()
   }
 
+  def aggregate(pipeline : DBObject*): Aggregation = {
+    Aggregation(pipeline)
+  }
   //////////////////////// New API
 
   private def convertAssoc(assoc: (TField, Any)): FieldAssoc = {
@@ -166,6 +169,34 @@ trait MongoThriftDao[T <: ThriftStruct, C <: ThriftStructCodec[T]] extends DBObj
 
   def update(assocs: Traversable[FieldAssoc], set: Traversable[FieldAssoc], inc: Traversable[FieldAssoc]) = {
     select(assocs.toSeq: _*).update(set, inc)
+  }
+  case class Aggregation(pipeLine: Seq[DBObject]) {
+    /**
+      * create a $project
+      */
+    def project(projections: (String ,DBObject)*) = {
+      val newPipeline = DBObject("$project" -> DBObject(projections:_*))
+      Aggregation(pipeLine :+ newPipeline)
+    }
+    /**
+      * create a $match
+      */
+    def matches(keys: (String,Any)*): Aggregation = {
+      val filter = DBObject(keys:_*)
+      Aggregation(pipeLine :+ DBObject("$match" -> filter))
+    }
+
+    def sort(sorts: (String,Int)*) ={
+      Aggregation(pipeLine :+ DBObject("$sort" -> DBObject(sorts:_*)))
+    }
+    def limit(limit: Int) = {
+      Aggregation(pipeLine :+ DBObject("$limit" -> limit))
+    }
+
+    def results:Iterable[DBObject] = {
+      coll.aggregate(pipeLine).results
+    }
+     
   }
 
   case class Select(assocs: FieldAssoc*) {
